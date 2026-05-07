@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping improve Ackless AU.
+Thanks for helping improve Ackless.
 
 ## Useful Reports
 

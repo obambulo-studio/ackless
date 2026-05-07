@@ -1,6 +1,6 @@
-# Ackless AU
+# Ackless
 
-Ackless AU is an open-source browser extension for Chrome, Firefox, and other WebExtensions-compatible browsers. It hides common Australian `Welcome to Country` and `Acknowledgement of Country` blocks on Australian websites and can rename selected Aboriginal place names to common Australian place names.
+Ackless is an open-source browser extension for Chrome, Firefox, and other WebExtensions-compatible browsers. It hides common Australian `Welcome to Country` and `Acknowledgement of Country` blocks on Australian websites and can rename selected Aboriginal place names to common Australian place names.
 
 The project is intentionally small: no telemetry, no remote rules, no bundled analytics, and no build step required to inspect the source.
 
@@ -27,7 +27,27 @@ This is an early prototype. It uses conservative text matching and DOM hiding ru
 - It does not sync hidden-block counts to any server.
 - It does not target non-Australian websites unless you explicitly enable the current site.
 
-## Install for Development
+## Install without the browser stores
+
+Store listings mean review queues and policy checks. For a small open-source extension, you can ship builds yourself and keep the install path short.
+
+### Chrome, Edge, Brave, and other Chromium browsers
+
+1. Download and unzip a release archive (or clone this repo).
+2. Open `chrome://extensions` (or `edge://extensions`, and so on).
+3. Turn on **Developer mode**.
+4. Click **Load unpacked** and choose the folder that contains `manifest.json`.
+
+Users only enable Developer mode once. After that, updates are “replace the folder” or load again from a fresh unzip. For teams, **managed installation** via enterprise policy is another option if you control devices.
+
+### Firefox
+
+- **Temporary load** (`about:debugging` → *Load Temporary Add-on*) is fine for development only; the add-on disappears when Firefox closes.
+- For **normal Firefox**, Mozilla requires extensions to be **signed**. You do not have to list on [addons.mozilla.org](https://addons.mozilla.org): you can request signing for **self-distribution**, get back a signed `.xpi`, and host it on GitHub Releases (or your site). Users install via *about:addons* → gear menu → *Install Add-on From File…*, or you link to the file if your hosting policy allows. See Mozilla’s docs for [signing and distribution](https://extensionworkshop.com/documentation/publish/signing-and-distribution-overview/).
+
+So the low-friction pattern for both engines is: **GitHub Releases** with a Chrome zip (unpacked bundle) and a **signed** Firefox `.xpi`, plus the short steps above in the release notes.
+
+## Install for development
 
 ### Chrome
 

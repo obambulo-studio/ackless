@@ -9,7 +9,7 @@ const {
   normalizeHost
 } = globalThis.AcklessShared;
 
-const HIDDEN_ATTR = "data-ackless-au-hidden";
+const HIDDEN_ATTR = "data-ackless-hidden";
 let pageBlockedCount = 0;
 let totalCountWrite = Promise.resolve();
 

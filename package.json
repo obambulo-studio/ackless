@@ -1,12 +1,12 @@
 {
-  "name": "ackless-au",
+  "name": "ackless",
   "version": "0.1.0",
   "description": "Open-source browser extension that hides Australian Welcome to Country and Acknowledgement of Country blocks.",
   "private": true,
   "type": "module",
   "scripts": {
     "check": "web-ext lint --source-dir . --ignore-files package.json package-lock.json README.md LICENSE CONTRIBUTING.md test-page.html",
-    "build:chrome": "mkdir -p dist && zip -r dist/ackless-au-chrome.zip manifest.json src icons README.md LICENSE",
+    "build:chrome": "mkdir -p dist && zip -r dist/ackless-chrome.zip manifest.json src icons README.md LICENSE",
     "build:firefox": "web-ext build --source-dir . --artifacts-dir dist --overwrite-dest --ignore-files package.json package-lock.json README.md CONTRIBUTING.md test-page.html"
   },
   "devDependencies": {

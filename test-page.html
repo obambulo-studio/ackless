@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en-AU">
   <head>
-    <meta charset="utf-8">
+    <meta charset="utf-8" />
     <title>Ackless test page</title>
     <style>
       body {
@@ -24,22 +24,37 @@
   <body style="overflow: hidden">
     <section class="acknowledgement-modal" role="dialog" aria-modal="true">
       <h1>Acknowledgement of Country</h1>
-      <p>We acknowledge the Traditional Owners and Elders past, present and emerging.</p>
-      <button type="button" onclick="this.closest('section').remove(); document.body.style.overflow = '';">
+      <p>
+        We acknowledge the Traditional Owners and Elders past, present and
+        emerging.
+      </p>
+      <button
+        type="button"
+        onclick="
+          this.closest('section').remove();
+          document.body.style.overflow = '';
+        "
+      >
         Continue
       </button>
     </section>
 
     <main>
       <h2>Regular Content</h2>
-      <p>This paragraph should remain visible. Uluṟu and K'gari should be renamed.</p>
+      <p>
+        This paragraph should remain visible. Uluṟu and K'gari should be
+        renamed.
+      </p>
       <p id="dynamic-ack"></p>
-      <p>The page should still scroll after the acknowledgement block is hidden.</p>
+      <p>
+        The page should still scroll after the acknowledgement block is hidden.
+      </p>
       <div class="spacer">Scroll test area</div>
     </main>
     <script>
       window.setTimeout(() => {
-        document.querySelector("#dynamic-ack").textContent = "Welcome to Country";
+        document.querySelector("#dynamic-ack").textContent =
+          "Welcome to Country";
       }, 500);
     </script>
   </body>

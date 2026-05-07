@@ -12,7 +12,7 @@
     "default_title": "Ackless",
     "default_popup": "src/popup.html"
   },
-  "permissions": ["storage", "tabs"],
+  "permissions": ["storage", "activeTab"],
   "content_scripts": [
     {
       "matches": ["<all_urls>"],

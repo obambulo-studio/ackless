@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ackless</title>
+    <link rel="stylesheet" href="popup.css">
+  </head>
+  <body>
+    <main>
+      <header class="popup-header">
+        <h1>Ackless</h1>
+
+        <button class="toggle" id="enabled" type="button" role="switch" aria-checked="true">
+          <span class="toggle__track" aria-hidden="true">
+            <span class="toggle__thumb"></span>
+          </span>
+          <span class="toggle__state">On</span>
+        </button>
+      </header>
+
+      <p>Hide common Australian Welcome to Country and Acknowledgement of Country blocks.</p>
+
+      <section class="stats-grid" aria-live="polite">
+        <div class="stats">
+          <span class="stats__value" id="page-blocked-count">0</span>
+          <span class="stats__label">Hidden on this page</span>
+        </div>
+
+        <div class="stats">
+          <span class="stats__value" id="blocked-count">0</span>
+          <span class="stats__label">Hidden total</span>
+        </div>
+      </section>
+
+      <button class="host-button" id="add-current-site" type="button">
+        Enable on this site
+      </button>
+
+      <p class="status" id="status" role="status"></p>
+
+      <p class="hint">Refresh the current page after changing this setting.</p>
+    </main>
+
+    <script src="shared.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>

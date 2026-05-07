@@ -2,6 +2,10 @@
 
 Ackless is an open-source browser extension for Chrome, Firefox, and other WebExtensions-compatible browsers. It hides common Australian `Welcome to Country` and `Acknowledgement of Country` blocks on Australian websites and can rename selected Aboriginal place names to common Australian place names.
 
+## Why
+
+Australians do not need to be “welcomed” to their own country, nor reminded on every page load to acknowledge Traditional Owners—we are already citizens, neighbours, and daily users of the same public life. Whatever you think of acknowledgement in other contexts, the same repeating banners, modals, and footers across Australian sites add little beyond interruption. For many people they feel like empty performance: virtue signalling that annoys more than it informs.
+
 The project is intentionally small: no telemetry, no remote rules, no bundled analytics, and no build step required to inspect the source.
 
 ## Status

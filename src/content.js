@@ -6,7 +6,7 @@ const {
   getApi,
   getStorage,
   setStorage,
-  normalizeHost
+  normalizeHost,
 } = globalThis.AcklessShared;
 
 const HIDDEN_ATTR = "data-ackless-hidden";
@@ -22,7 +22,7 @@ const ACKNOWLEDGEMENT_PATTERNS = [
   /\bfirst\s+nations\s+peoples?\b/i,
   /\baboriginal\s+and\s+torres\s+strait\s+islander\s+peoples?\b/i,
   /\belders?\s+past(?:,|\s)+present(?:,|\s)+(?:and\s+)?emerging\b/i,
-  /\bsovereignty\s+was\s+never\s+ceded\b/i
+  /\bsovereignty\s+was\s+never\s+ceded\b/i,
 ];
 
 const PLACE_NAME_REPLACEMENTS = [
@@ -37,12 +37,12 @@ const PLACE_NAME_REPLACEMENTS = [
   ["nipaluna", "Hobart"],
   ["Gulumoerrgin", "Darwin"],
   ["Boorloo", "Perth"],
-  ["Ngunnawal", "Canberra"]
+  ["Ngunnawal", "Canberra"],
 ];
 
 const PLACE_NAME_RULES = PLACE_NAME_REPLACEMENTS.map(([from, to]) => ({
   pattern: new RegExp(`\\b${escapeRegExp(from)}\\b`, "giu"),
-  replacement: to
+  replacement: to,
 }));
 
 const DIALOG_SELECTOR = "dialog, [role='dialog'], [aria-modal='true']";
@@ -60,7 +60,7 @@ const BLOCK_SELECTOR = [
   "body > section",
   "body > aside",
   "p",
-  "small"
+  "small",
 ].join(",");
 
 const CANDIDATE_SELECTOR = [
@@ -77,14 +77,14 @@ const CANDIDATE_SELECTOR = [
   "footer",
   "section",
   "p",
-  "small"
+  "small",
 ].join(",");
 
 /** Controls we may call .click() on (no links or submit — navigation / form abuse). */
 const PROGRAMMATIC_CLOSE_CONTROL_SELECTOR = [
   "button:not([disabled])",
   "[role='button']:not([aria-disabled='true'])",
-  "input[type='button']:not([disabled])"
+  "input[type='button']:not([disabled])",
 ].join(",");
 
 const CLOSE_CONTROL_PATTERNS = [
@@ -100,7 +100,7 @@ const CLOSE_CONTROL_PATTERNS = [
   /\bgot\s+it\b/i,
   /\bskip\b/i,
   /\b×\b/,
-  /^\s*x\s*$/i
+  /^\s*x\s*$/i,
 ];
 
 async function incrementBlockedCount(count) {
@@ -111,7 +111,7 @@ async function incrementBlockedCount(count) {
   totalCountWrite = totalCountWrite.then(async () => {
     const result = await getStorage("local", { [BLOCKED_COUNT_KEY]: 0 });
     await setStorage("local", {
-      [BLOCKED_COUNT_KEY]: result[BLOCKED_COUNT_KEY] + count
+      [BLOCKED_COUNT_KEY]: result[BLOCKED_COUNT_KEY] + count,
     });
   });
 
@@ -139,9 +139,7 @@ function textMatchesAcknowledgement(text) {
 }
 
 function hasInteractiveForm(element) {
-  return Boolean(
-    element.querySelector("input, textarea, select, form, video, audio, canvas")
-  );
+  return Boolean(element.querySelector("input, textarea, select, form, video, audio, canvas"));
 }
 
 function chooseHideTarget(element) {
@@ -167,8 +165,7 @@ function hideElement(element) {
   if (!element || element.hasAttribute(HIDDEN_ATTR)) return false;
 
   const wasModal =
-    element.matches(DIALOG_SELECTOR) ||
-    Boolean(element.querySelector("[aria-modal='true']"));
+    element.matches(DIALOG_SELECTOR) || Boolean(element.querySelector("[aria-modal='true']"));
 
   if (wasModal && closeAcknowledgementDialog(element)) {
     restorePageScrolling();
@@ -217,9 +214,7 @@ function isSafeToProgrammaticClick(control) {
 }
 
 function closeAcknowledgementDialog(element) {
-  const nativeDialog = element.matches("dialog")
-    ? element
-    : element.querySelector("dialog");
+  const nativeDialog = element.matches("dialog") ? element : element.querySelector("dialog");
 
   if (nativeDialog && typeof nativeDialog.close === "function" && nativeDialog.open) {
     nativeDialog.close();
@@ -234,7 +229,7 @@ function closeAcknowledgementDialog(element) {
       control.getAttribute("aria-label"),
       control.getAttribute("title"),
       control.getAttribute("value"),
-      control.textContent
+      control.textContent,
     ]
       .filter(Boolean)
       .join(" ")
@@ -288,8 +283,8 @@ function shouldSkipTextNode(node) {
 
   return Boolean(
     parent.closest(
-      `[${HIDDEN_ATTR}='true'], script, style, noscript, textarea, input, select, option, code, pre, [contenteditable='true']`
-    )
+      `[${HIDDEN_ATTR}='true'], script, style, noscript, textarea, input, select, option, code, pre, [contenteditable='true']`,
+    ),
   );
 }
 
@@ -329,7 +324,7 @@ function scanPage(root = document) {
     const label = [
       candidate.getAttribute("aria-label"),
       candidate.getAttribute("title"),
-      candidate.textContent
+      candidate.textContent,
     ]
       .filter(Boolean)
       .join(" ");
@@ -382,7 +377,7 @@ function watchPage() {
   observer.observe(document.documentElement, {
     childList: true,
     characterData: true,
-    subtree: true
+    subtree: true,
   });
 }
 

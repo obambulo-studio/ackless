@@ -3,7 +3,8 @@ globalThis.AcklessShared = {
   BLOCKED_COUNT_KEY: "acklessAuBlockedCount",
   CUSTOM_HOSTS_KEY: "acklessAuCustomHosts",
   MESSAGE_GET_PAGE_STATS: "ACKLESS_GET_PAGE_STATS",
-  EXPECTED_MESSAGE_ERROR_PATTERN: /receiving end does not exist|could not establish connection|no tab with id|cannot access/i,
+  EXPECTED_MESSAGE_ERROR_PATTERN:
+    /receiving end does not exist|could not establish connection|no tab with id|cannot access/i,
 
   getApi() {
     return typeof browser !== "undefined" ? browser : chrome;
@@ -37,5 +38,5 @@ globalThis.AcklessShared = {
 
   normalizeHost(host) {
     return host.trim().toLowerCase().replace(/^\*\./, "").replace(/\.$/, "");
-  }
+  },
 };

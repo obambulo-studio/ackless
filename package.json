@@ -5,11 +5,16 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "web-ext lint --source-dir . --ignore-files package.json package-lock.json README.md LICENSE CONTRIBUTING.md test-page.html",
+    "lint": "oxlint src",
+    "format": "oxfmt --write src",
+    "format:check": "oxfmt --check src",
+    "check": "oxlint src && oxfmt --check src && web-ext lint --source-dir . --ignore-files package.json package-lock.json bun.lock README.md LICENSE CONTRIBUTING.md test-page.html",
     "build:chrome": "mkdir -p dist && zip -r dist/ackless-chrome.zip manifest.json src icons README.md LICENSE",
-    "build:firefox": "web-ext build --source-dir . --artifacts-dir dist --overwrite-dest --ignore-files package.json package-lock.json README.md CONTRIBUTING.md test-page.html"
+    "build:firefox": "web-ext build --source-dir . --artifacts-dir dist --overwrite-dest --ignore-files package.json package-lock.json bun.lock README.md CONTRIBUTING.md test-page.html"
   },
   "devDependencies": {
+    "oxfmt": "^0.48.0",
+    "oxlint": "^1.63.0",
     "web-ext": "^8.10.0"
   }
 }

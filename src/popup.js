@@ -7,7 +7,7 @@ const {
   getApi,
   getStorage,
   setStorage,
-  normalizeHost
+  normalizeHost,
 } = globalThis.AcklessShared;
 
 const api = getApi();
@@ -22,7 +22,7 @@ const statusText = document.querySelector("#status");
 async function loadState() {
   const [syncState, localState] = await Promise.all([
     getStorage("sync", { [STORAGE_KEY]: true }),
-    getStorage("local", { [BLOCKED_COUNT_KEY]: 0 })
+    getStorage("local", { [BLOCKED_COUNT_KEY]: 0 }),
   ]);
 
   setEnabledState(syncState[STORAGE_KEY] !== false);
@@ -82,7 +82,7 @@ async function getCurrentPageStats() {
     if (!activeTab?.id) return { pageBlockedCount: 0 };
 
     return await sendMessage(activeTab.id, {
-      type: MESSAGE_GET_PAGE_STATS
+      type: MESSAGE_GET_PAGE_STATS,
     });
   } catch (error) {
     if (!EXPECTED_MESSAGE_ERROR_PATTERN.test(error.message ?? "")) {
@@ -112,7 +112,7 @@ async function addCurrentSite() {
 
   if (!customHosts.includes(host)) {
     await setStorage("sync", {
-      [CUSTOM_HOSTS_KEY]: [...customHosts, host]
+      [CUSTOM_HOSTS_KEY]: [...customHosts, host],
     });
   }
 

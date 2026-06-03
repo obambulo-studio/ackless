@@ -50,6 +50,24 @@ Open it from the popup (**View activity**) to review everything from the last 24
 
 Events older than 24 hours are dropped automatically. Hostnames are stored only as context on each log entry — there are no per-site leaderboard tables or URL paths.
 
+## Mozilla add-on policies (Firefox / AMO)
+
+Ackless is designed to align with [Mozilla’s add-on policies](https://addons.mozilla.org/en-US/developers/docs/policies) and the [Firefox Add-on Distribution Agreement](https://addons.mozilla.org/en-US/developers/docs/policies/agreement).
+
+| Resource | Purpose |
+|----------|---------|
+| [SOURCE_SUBMISSION.md](SOURCE_SUBMISSION.md) | Build steps for AMO reviewers |
+| [docs/AMO_LISTING.md](docs/AMO_LISTING.md) | Draft listing text and reviewer notes |
+| [PRIVACY.md](PRIVACY.md) | Privacy policy URL for the listing |
+
+Before listing on AMO:
+
+- Set `browser_specific_settings.gecko.id` in `manifest.json` to your Mozilla developer add-on ID (replace the placeholder `ackless@example.com`).
+- Build the signed XPI: `bun run build:firefox`
+- Attach source zip: `bun run package:amo-source` → upload `dist/ackless-amo-source.zip` with each version.
+
+`data_collection_permissions.required` is `["none"]` with `strict_min_version` `140.0` so Firefox uses built-in data-collection disclosure (no off-device transmission).
+
 ## What It Does Not Do
 
 - It does not collect analytics or send activity stats to any server.

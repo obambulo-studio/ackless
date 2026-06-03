@@ -21,6 +21,24 @@ export function getApi(): AcklessExtensionApi {
   ) as AcklessExtensionApi;
 }
 
+/** True when this extension context is running in a private/incognito window. */
+export function isPrivateBrowsingContext(): boolean {
+  if (typeof browser !== "undefined" && browser.extension) {
+    return Boolean(browser.extension.inIncognitoContext);
+  }
+
+  if (typeof chrome !== "undefined" && chrome.extension) {
+    return Boolean(chrome.extension.inIncognitoContext);
+  }
+
+  return false;
+}
+
+/** Activity logs must not persist in private browsing (Mozilla add-on policy). */
+export function shouldPersistActivity(): boolean {
+  return !isPrivateBrowsingContext();
+}
+
 export function getStorage<T extends Record<string, unknown>>(
   area: chrome.storage.AreaName,
   defaults: T

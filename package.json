@@ -11,7 +11,8 @@
     "test": "vitest run",
     "check": "ultracite check && tsc --noEmit && vitest run && node scripts/build.mjs && web-ext lint --source-dir dist --ignore-files package.json bun.lock README.md LICENSE CONTRIBUTING.md test-page.html",
     "build:chrome": "bun run build && (cd dist && zip -r ackless-chrome.zip manifest.json icons src README.md LICENSE)",
-    "build:firefox": "bun run build && web-ext build --source-dir dist --artifacts-dir dist --overwrite-dest --ignore-files package.json bun.lock README.md CONTRIBUTING.md test-page.html"
+    "build:firefox": "bun run build && web-ext build --source-dir dist --artifacts-dir dist --overwrite-dest --ignore-files package.json bun.lock README.md CONTRIBUTING.md test-page.html",
+    "package:amo-source": "node scripts/package-amo-source.mjs"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.268",

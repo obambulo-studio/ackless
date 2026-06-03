@@ -13,6 +13,7 @@ import {
   normalizeHost,
   getActivityHost,
   sendRuntimeMessage,
+  shouldPersistActivity,
 } from "./shared";
 
 const HIDDEN_ATTR = "data-ackless-hidden";
@@ -105,7 +106,7 @@ function mergeRenameMatches(
 }
 
 async function trackBlocks(blocks: readonly BlockRecord[]): Promise<void> {
-  if (blocks.length === 0) {
+  if (!shouldPersistActivity() || blocks.length === 0) {
     return;
   }
 
@@ -117,6 +118,10 @@ async function trackBlocks(blocks: readonly BlockRecord[]): Promise<void> {
 }
 
 async function trackRenames(matches: readonly RenameMatch[]): Promise<void> {
+  if (!shouldPersistActivity()) {
+    return;
+  }
+
   const total = matches.reduce((sum, match) => sum + match.count, 0);
   if (total <= 0) {
     return;

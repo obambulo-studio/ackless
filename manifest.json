@@ -12,7 +12,11 @@
     "default_title": "Ackless",
     "default_popup": "src/popup.html"
   },
-  "permissions": ["storage", "activeTab"],
+  "permissions": ["storage", "activeTab", "tabs", "scripting"],
+  "background": {
+    "scripts": ["src/background.js"],
+    "service_worker": "src/background.js"
+  },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],

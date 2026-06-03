@@ -27,9 +27,27 @@ await esbuild.build({
 
 await esbuild.build({
   bundle: true,
+  entryPoints: [path.join(root, "src/background.ts")],
+  format: "iife",
+  outfile: path.join(dist, "src/background.js"),
+  platform: "browser",
+  target: browserTarget,
+});
+
+await esbuild.build({
+  bundle: true,
   entryPoints: [path.join(root, "src/popup.ts")],
   format: "iife",
   outfile: path.join(dist, "src/popup.js"),
+  platform: "browser",
+  target: browserTarget,
+});
+
+await esbuild.build({
+  bundle: true,
+  entryPoints: [path.join(root, "src/activity.ts")],
+  format: "iife",
+  outfile: path.join(dist, "src/activity.js"),
   platform: "browser",
   target: browserTarget,
 });
@@ -48,6 +66,14 @@ fs.copyFileSync(
 fs.copyFileSync(
   path.join(root, "src/popup.css"),
   path.join(dist, "src/popup.css")
+);
+fs.copyFileSync(
+  path.join(root, "src/activity.html"),
+  path.join(dist, "src/activity.html")
+);
+fs.copyFileSync(
+  path.join(root, "src/activity.css"),
+  path.join(dist, "src/activity.css")
 );
 
 for (const file of ["README.md", "LICENSE"]) {

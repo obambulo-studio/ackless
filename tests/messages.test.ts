@@ -16,19 +16,25 @@ describe("page stats messaging", () => {
   });
 
   it("normalizes response payloads defensively", () => {
-    expect(normalizePageStatsResponse({ pageBlockedCount: 3 })).toEqual({
+    expect(
+      normalizePageStatsResponse({ pageBlockedCount: 3, pageRenameCount: 2 })
+    ).toEqual({
       pageBlockedCount: 3,
+      pageRenameCount: 2,
     });
     expect(
       normalizePageStatsResponse({ pageBlockedCount: Number.NaN })
     ).toEqual({
       pageBlockedCount: 0,
+      pageRenameCount: 0,
     });
     expect(normalizePageStatsResponse({ pageBlockedCount: "x" })).toEqual({
       pageBlockedCount: 0,
+      pageRenameCount: 0,
     });
     expect(normalizePageStatsResponse()).toEqual({
       pageBlockedCount: 0,
+      pageRenameCount: 0,
     });
   });
 });

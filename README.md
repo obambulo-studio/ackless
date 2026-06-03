@@ -18,17 +18,46 @@ This is an early prototype. It uses conservative text matching and DOM hiding ru
 - Looks for common acknowledgement phrases, including `Welcome to Country`, `Acknowledgement of Country`, `Traditional Owners`, and related wording.
 - Hides the closest matching banner, modal, section, paragraph, or acknowledgement block.
 - Renames a small, auditable list of place names, such as `Uluṟu` to `Ayers Rock` and `K'gari` to `Fraser Island`.
-- Tracks local counts for acknowledgement blocks hidden on the current page and in total.
 - Watches for late-loaded content and hides matching blocks after the page changes.
 - Provides a popup toggle to enable or disable the extension, plus an option to enable matching on the current non-`.au` site.
 
+## Activity
+
+Ackless keeps a **local activity log** on your device for the **last 24 hours**, collated **across all sites** — not per-page totals and not lifetime stats. Nothing is sent to a server.
+
+### Icon badge
+
+Like ad blockers, the extension icon shows a **red badge** with how many acknowledgement blocks were hidden in the last 24 hours (all sites combined). The badge is hidden when the count is zero, shows the exact number up to 999, then `999+` for higher counts. It updates as blocks are hidden and clears when you wipe activity.
+
+### Popup
+
+The popup stays minimal:
+
+- Enable/disable toggle
+- **View activity** — opens the full Activity page in a new tab
+- A one-line summary: `X hidden · Y renamed in last 24 hours`
+- **Enable on this site** for non-`.au` pages you want included
+
+### Activity page
+
+Open it from the popup (**View activity**) to review everything from the last 24 hours:
+
+- **Overview** — total hidden blocks and place-name renames
+- **What was hidden** — each block with a text excerpt, the site hostname, and when it happened
+- **Place names renamed** — global from→to counts (e.g. `Naarm` → `Melbourne`)
+- **Export JSON** — download the raw activity data
+- **Clear all** — wipe the 24-hour log and reset the icon badge
+
+Events older than 24 hours are dropped automatically. Hostnames are stored only as context on each log entry — there are no per-site leaderboard tables or URL paths.
+
 ## What It Does Not Do
 
-- It does not collect analytics.
-- It does not send visited URLs anywhere.
+- It does not collect analytics or send activity stats to any server.
+- It does not send full page URLs anywhere (activity entries store hostnames only, locally).
+- It does not keep activity beyond 24 hours.
 - It does not use remote filtering lists.
 - It does not use remote place-name mappings.
-- It does not sync hidden-block counts to any server.
+- It does not sync activity stats across devices.
 - It does not target non-Australian websites unless you explicitly enable the current site.
 
 ## Install without the browser stores

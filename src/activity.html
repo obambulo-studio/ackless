@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ackless Activity</title>
+    <link rel="stylesheet" href="activity.css" />
+  </head>
+  <body>
+    <main>
+      <header class="page-header">
+        <h1>Ackless Activity</h1>
+        <p class="page-intro">
+          Everything below is from the last 24 hours across all sites. Stored
+          locally on this device — nothing is sent anywhere.
+        </p>
+      </header>
+
+      <section class="overview" aria-labelledby="overview-heading">
+        <h2 id="overview-heading">Last 24 hours</h2>
+        <div class="overview__grid">
+          <div class="stat-card">
+            <span class="stat-card__value" id="total-blocks">0</span>
+            <span class="stat-card__label">Hidden</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-card__value" id="total-renames">0</span>
+            <span class="stat-card__label">Renamed</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="blocks-heading">
+        <h2 id="blocks-heading">What was hidden</h2>
+        <ul class="recent-list" id="blocks-list">
+          <li class="recent-list__empty">Nothing hidden in the last 24 hours.</li>
+        </ul>
+      </section>
+
+      <section class="panel" aria-labelledby="renames-heading">
+        <h2 id="renames-heading">Place names renamed</h2>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th scope="col">From</th>
+                <th scope="col">To</th>
+                <th scope="col">Count</th>
+              </tr>
+            </thead>
+            <tbody id="renames-table-body">
+              <tr>
+                <td colspan="3" class="empty-cell">
+                  No renames in the last 24 hours.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="actions">
+        <button class="action-button" id="export-activity" type="button">
+          Export JSON
+        </button>
+        <button
+          class="action-button action-button--danger"
+          id="clear-activity"
+          type="button"
+        >
+          Clear all
+        </button>
+      </section>
+
+      <p class="status" id="status" role="status"></p>
+    </main>
+
+    <script src="activity.js"></script>
+  </body>
+</html>

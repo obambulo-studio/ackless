@@ -1,7 +1,18 @@
 /**
- * Registers content scripts for hosts the user added via "Enable on this site".
- * Australian and local dev hosts are covered by manifest content_scripts matches.
+ * Service worker: serializes activity writes and registers content scripts for
+ * custom hosts the user enabled from the popup.
  */
+import {
+  clearActivityData,
+  recordBlocks,
+  recordRenames,
+} from "./activity-stats";
+import { updateActionBadge } from "./badge";
+import {
+  isClearActivityMessage,
+  isRecordBlocksMessage,
+  isRecordRenamesMessage,
+} from "./messages";
 import { CUSTOM_HOSTS_KEY, getStorage, normalizeHost } from "./shared";
 
 const SCRIPT_PATH = "src/content.js";
@@ -68,12 +79,70 @@ async function refreshCustomHostScripts(): Promise<void> {
   );
 }
 
+async function refreshBadge(): Promise<void> {
+  await updateActionBadge(api().action);
+}
+
+function listenForActivityMessages(): void {
+  api().runtime.onMessage.addListener((message, _sender, sendResponse) => {
+    if (isRecordBlocksMessage(message)) {
+      void recordBlocks(message.host, message.blocks)
+        .then(async () => {
+          await refreshBadge();
+          sendResponse({ ok: true });
+        })
+        .catch((error: unknown) => {
+          sendResponse({
+            ok: false,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        });
+      return true;
+    }
+
+    if (isRecordRenamesMessage(message)) {
+      void recordRenames(message.host, message.matches)
+        .then(() => {
+          sendResponse({ ok: true });
+        })
+        .catch((error: unknown) => {
+          sendResponse({
+            ok: false,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        });
+      return true;
+    }
+
+    if (isClearActivityMessage(message)) {
+      void clearActivityData()
+        .then(async () => {
+          await refreshBadge();
+          sendResponse({ ok: true });
+        })
+        .catch((error: unknown) => {
+          sendResponse({
+            ok: false,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        });
+      return true;
+    }
+
+    return false;
+  });
+}
+
+listenForActivityMessages();
+
 api().runtime.onInstalled.addListener(() => {
   void refreshCustomHostScripts();
+  void refreshBadge();
 });
 
 api().runtime.onStartup.addListener(() => {
   void refreshCustomHostScripts();
+  void refreshBadge();
 });
 
 api().storage.onChanged.addListener((changes, areaName) => {

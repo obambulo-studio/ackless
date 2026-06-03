@@ -1,19 +1,22 @@
+import type { BlockRecord, RenameMatch } from "./activity-stats";
 import { textMatchesAcknowledgement } from "./acknowledgement";
-import { isPageStatsRequestMessage } from "./messages";
-import { replacePlaceNamesInText } from "./place-names";
+import {
+  replacePlaceNamesInTextWithMatches,
+  type PlaceNameMatch,
+} from "./place-names";
 import {
   STORAGE_KEY,
-  BLOCKED_COUNT_KEY,
   CUSTOM_HOSTS_KEY,
+  MESSAGE_RECORD_BLOCKS,
+  MESSAGE_RECORD_RENAMES,
   getStorage,
-  setStorage,
   normalizeHost,
-  getApi,
+  getActivityHost,
+  sendRuntimeMessage,
 } from "./shared";
 
 const HIDDEN_ATTR = "data-ackless-hidden";
-let pageBlockedCount = 0;
-let totalCountWrite: Promise<void> = Promise.resolve();
+const EXCERPT_MAX_LENGTH = 120;
 
 const DIALOG_SELECTOR = "dialog, [role='dialog'], [aria-modal='true']";
 
@@ -73,21 +76,66 @@ const CLOSE_CONTROL_PATTERNS = [
   /^\s*x\s*$/i,
 ];
 
-async function incrementBlockedCount(count: number): Promise<void> {
-  if (count <= 0) {
+function mergeRenameMatches(
+  target: Map<string, RenameMatch>,
+  matches: readonly PlaceNameMatch[]
+): number {
+  let added = 0;
+
+  for (const match of matches) {
+    if (match.count <= 0) {
+      continue;
+    }
+
+    added += match.count;
+    const key = `${match.from}\0${match.to}`;
+    const existing = target.get(key);
+    if (existing) {
+      existing.count += match.count;
+    } else {
+      target.set(key, {
+        from: match.from,
+        to: match.to,
+        count: match.count,
+      });
+    }
+  }
+
+  return added;
+}
+
+async function trackBlocks(blocks: readonly BlockRecord[]): Promise<void> {
+  if (blocks.length === 0) {
     return;
   }
 
-  pageBlockedCount += count;
-
-  totalCountWrite = totalCountWrite.then(async () => {
-    const result = await getStorage("local", { [BLOCKED_COUNT_KEY]: 0 });
-    await setStorage("local", {
-      [BLOCKED_COUNT_KEY]: result[BLOCKED_COUNT_KEY] + count,
-    });
+  await sendRuntimeMessage({
+    type: MESSAGE_RECORD_BLOCKS,
+    host: getActivityHost(),
+    blocks,
   });
+}
 
-  await totalCountWrite;
+async function trackRenames(matches: readonly RenameMatch[]): Promise<void> {
+  const total = matches.reduce((sum, match) => sum + match.count, 0);
+  if (total <= 0) {
+    return;
+  }
+
+  await sendRuntimeMessage({
+    type: MESSAGE_RECORD_RENAMES,
+    host: getActivityHost(),
+    matches,
+  });
+}
+
+function getAcknowledgementExcerpt(label: string): string {
+  const normalized = label.replace(/\s+/g, " ").trim();
+  if (normalized.length <= EXCERPT_MAX_LENGTH) {
+    return normalized;
+  }
+
+  return `${normalized.slice(0, EXCERPT_MAX_LENGTH - 1)}…`;
 }
 
 async function isLikelyAustralianPage(): Promise<boolean> {
@@ -277,37 +325,39 @@ function restorePageScrolling(): void {
   );
 }
 
-function renamePlaceNames(root?: ParentNode): number {
+async function renamePlaceNames(root?: ParentNode): Promise<void> {
   const scope = root ?? document.body;
   if (!scope) {
-    return 0;
+    return;
   }
 
   const walker = document.createTreeWalker(scope, NodeFilter.SHOW_TEXT);
-  let renamedCount = 0;
+  const aggregatedMatches = new Map<string, RenameMatch>();
   let textNode = walker.nextNode();
 
   while (textNode) {
     if (textNode instanceof Text && !shouldSkipTextNode(textNode)) {
       const originalText = textNode.nodeValue ?? "";
-      const updatedText = replacePlaceNamesInText(originalText);
+      const { text: updatedText, matches } =
+        replacePlaceNamesInTextWithMatches(originalText);
 
       if (updatedText !== originalText) {
         textNode.nodeValue = updatedText;
-        renamedCount += 1;
+        mergeRenameMatches(aggregatedMatches, matches);
       }
     }
 
     textNode = walker.nextNode();
   }
 
-  return renamedCount;
+  if (aggregatedMatches.size > 0) {
+    await trackRenames([...aggregatedMatches.values()]);
+  }
 }
 
-function scanPage(root: ParentNode = document): number {
+function scanPage(root: ParentNode = document): BlockRecord[] {
   const candidates = getCandidates(root);
-
-  let hiddenCount = 0;
+  const blocks: BlockRecord[] = [];
 
   for (const candidate of candidates) {
     if (!(candidate instanceof HTMLElement)) {
@@ -331,11 +381,11 @@ function scanPage(root: ParentNode = document): number {
 
     const target = chooseHideTarget(candidate);
     if (target instanceof HTMLElement && hideElement(target)) {
-      hiddenCount += 1;
+      blocks.push({ excerpt: getAcknowledgementExcerpt(label) });
     }
   }
 
-  return hiddenCount;
+  return blocks;
 }
 
 function getCandidates(root: ParentNode): Iterable<Element> {
@@ -362,14 +412,16 @@ function watchPage(): void {
       scanQueued = false;
       const roots = pendingRoots;
       pendingRoots = [];
-      let hiddenCount = 0;
+      const blocks: BlockRecord[] = [];
 
-      for (const root of roots) {
-        renamePlaceNames(root);
-        hiddenCount += scanPage(root);
-      }
+      void (async () => {
+        for (const root of roots) {
+          await renamePlaceNames(root);
+          blocks.push(...scanPage(root));
+        }
 
-      void incrementBlockedCount(hiddenCount);
+        await trackBlocks(blocks);
+      })();
     }, 250);
   };
 
@@ -399,31 +451,7 @@ async function isEnabled(): Promise<boolean> {
   return result[STORAGE_KEY] !== false;
 }
 
-function listenForPopupMessages(): void {
-  const api = getApi();
-
-  api.runtime.onMessage.addListener(
-    (
-      message: unknown,
-      _sender: chrome.runtime.MessageSender,
-      sendResponse: (response?: unknown) => void
-    ) => {
-      // Sync response only: `sendResponse` runs before the listener returns and we use `return false`
-      // (not `true`). If this handler ever becomes async, switch to `return true` and Chrome's async
-      // response contract.
-      if (!isPageStatsRequestMessage(message)) {
-        return false;
-      }
-
-      sendResponse({ pageBlockedCount });
-      return false;
-    }
-  );
-}
-
 async function start(): Promise<void> {
-  listenForPopupMessages();
-
   if (!(await isEnabled())) {
     return;
   }
@@ -431,8 +459,8 @@ async function start(): Promise<void> {
     return;
   }
 
-  renamePlaceNames();
-  await incrementBlockedCount(scanPage());
+  await renamePlaceNames();
+  await trackBlocks(scanPage());
   watchPage();
 }
 

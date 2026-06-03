@@ -2,6 +2,10 @@ export const STORAGE_KEY = "acklessAuEnabled" as const;
 export const BLOCKED_COUNT_KEY = "acklessAuBlockedCount" as const;
 export const CUSTOM_HOSTS_KEY = "acklessAuCustomHosts" as const;
 export const MESSAGE_GET_PAGE_STATS = "ACKLESS_GET_PAGE_STATS" as const;
+export const MESSAGE_RECORD_BLOCKS = "ACKLESS_RECORD_BLOCKS" as const;
+export const MESSAGE_RECORD_RENAMES = "ACKLESS_RECORD_RENAMES" as const;
+export const MESSAGE_CLEAR_ACTIVITY = "ACKLESS_CLEAR_ACTIVITY" as const;
+export const ACTIVITY_PAGE_PATH = "src/activity.html" as const;
 export const EXPECTED_MESSAGE_ERROR_PATTERN =
   /receiving end does not exist|could not establish connection|no tab with id|cannot access/i;
 
@@ -55,4 +59,51 @@ export function setStorage(
 
 export function normalizeHost(host: string): string {
   return host.trim().toLowerCase().replace(/^\*\./, "").replace(/\.$/, "");
+}
+
+export function getActivityHost(
+  location: Pick<Location, "hostname" | "protocol"> = {
+    hostname:
+      typeof globalThis.location === "object" && globalThis.location
+        ? globalThis.location.hostname
+        : "",
+    protocol:
+      typeof globalThis.location === "object" && globalThis.location
+        ? globalThis.location.protocol
+        : "https:",
+  }
+): string {
+  const host = normalizeHost(location.hostname);
+  if (host) {
+    return host;
+  }
+
+  if (location.protocol === "file:") {
+    return "local-file";
+  }
+
+  return "unknown-host";
+}
+
+export async function sendRuntimeMessage<T = unknown>(
+  message: unknown
+): Promise<T> {
+  const api = getApi();
+  const result = api.runtime.sendMessage(message);
+
+  if (result && typeof result.then === "function") {
+    return result as Promise<T>;
+  }
+
+  return new Promise<T>((resolve, reject) => {
+    api.runtime.sendMessage(message, (response: T) => {
+      const error = api.runtime.lastError;
+      if (error) {
+        reject(new Error(error.message));
+        return;
+      }
+
+      resolve(response);
+    });
+  });
 }

@@ -105,6 +105,43 @@ p {
   margin-top: 16px;
 }
 
+.activity-button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  width: 100%;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, #2563eb 35%, Canvas);
+  border-radius: 10px;
+  background: color-mix(in srgb, #2563eb 10%, Canvas);
+  color: CanvasText;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.activity-button__label {
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.activity-button__summary {
+  color: color-mix(in srgb, CanvasText 70%, Canvas);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.activity-button:hover {
+  background: color-mix(in srgb, #2563eb 16%, Canvas);
+}
+
+.activity-button:focus-visible {
+  outline: 2px solid color-mix(in srgb, #2563eb 45%, transparent);
+  outline-offset: 2px;
+}
+
 .stats {
   padding: 12px;
   border: 1px solid color-mix(in srgb, CanvasText 14%, Canvas);

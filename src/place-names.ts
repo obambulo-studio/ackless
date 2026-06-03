@@ -18,9 +18,16 @@ function escapeRegExp(value: string): string {
 }
 
 const PLACE_NAME_RULES = PLACE_NAME_REPLACEMENTS.map(([from, to]) => ({
+  from,
   pattern: new RegExp(`\\b${escapeRegExp(from)}\\b`, "giu"),
   replacement: to,
 }));
+
+export interface PlaceNameMatch {
+  from: string;
+  to: string;
+  count: number;
+}
 
 export function preserveCase(replacement: string, original: string): string {
   if (original === original.toUpperCase()) {
@@ -35,12 +42,28 @@ export function preserveCase(replacement: string, original: string): string {
   return replacement;
 }
 
-export function replacePlaceNamesInText(text: string): string {
+export function replacePlaceNamesInTextWithMatches(text: string): {
+  text: string;
+  matches: PlaceNameMatch[];
+} {
   let updated = text;
-  for (const { pattern, replacement } of PLACE_NAME_RULES) {
+  const matches: PlaceNameMatch[] = [];
+
+  for (const { from, pattern, replacement } of PLACE_NAME_RULES) {
+    const found = updated.match(pattern);
+    if (!found?.length) {
+      continue;
+    }
+
     updated = updated.replace(pattern, (match) =>
       preserveCase(replacement, match)
     );
+    matches.push({ from, to: replacement, count: found.length });
   }
-  return updated;
+
+  return { text: updated, matches };
+}
+
+export function replacePlaceNamesInText(text: string): string {
+  return replacePlaceNamesInTextWithMatches(text).text;
 }

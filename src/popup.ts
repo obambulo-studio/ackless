@@ -1,10 +1,8 @@
-import { normalizePageStatsResponse } from "./messages";
+import { ACTIVITY_KEY, getActivitySummary } from "./activity-stats";
 import {
   STORAGE_KEY,
-  BLOCKED_COUNT_KEY,
   CUSTOM_HOSTS_KEY,
-  MESSAGE_GET_PAGE_STATS,
-  EXPECTED_MESSAGE_ERROR_PATTERN,
+  ACTIVITY_PAGE_PATH,
   getApi,
   getStorage,
   setStorage,
@@ -18,8 +16,8 @@ const countFormatter = new Intl.NumberFormat();
 interface PopupUi {
   toggle: HTMLButtonElement;
   toggleState: HTMLElement;
-  blockedCount: HTMLElement;
-  pageBlockedCount: HTMLElement;
+  activitySummary: HTMLElement;
+  viewActivityButton: HTMLButtonElement;
   addCurrentSiteButton: HTMLButtonElement;
   statusText: HTMLElement;
 }
@@ -40,8 +38,8 @@ function resolvePopupUi(): PopupUi | null {
 
   const toggle = document.querySelector(".toggle");
   const toggleState = document.querySelector(".toggle__state");
-  const blockedCount = document.querySelector("#blocked-count");
-  const pageBlockedCount = document.querySelector("#page-blocked-count");
+  const activitySummary = document.querySelector("#activity-summary");
+  const viewActivityButton = document.querySelector("#view-activity");
   const addCurrentSiteButton = document.querySelector("#add-current-site");
   const statusText = statusSlot;
 
@@ -59,14 +57,14 @@ function resolvePopupUi(): PopupUi | null {
     );
     return null;
   }
-  if (!(blockedCount instanceof HTMLElement)) {
+  if (!(activitySummary instanceof HTMLElement)) {
     reportBootstrapFailure(
       statusSlot,
       "Ackless UI failed to load. Reinstall the extension."
     );
     return null;
   }
-  if (!(pageBlockedCount instanceof HTMLElement)) {
+  if (!(viewActivityButton instanceof HTMLButtonElement)) {
     reportBootstrapFailure(
       statusSlot,
       "Ackless UI failed to load. Reinstall the extension."
@@ -86,27 +84,22 @@ function resolvePopupUi(): PopupUi | null {
   }
 
   return {
+    activitySummary,
     addCurrentSiteButton,
-    blockedCount,
-    pageBlockedCount,
     statusText,
     toggle,
     toggleState,
+    viewActivityButton,
   };
 }
 
 function bindPopup(ui: PopupUi): void {
   async function loadState(): Promise<void> {
-    const [syncState, localState] = await Promise.all([
-      getStorage("sync", { [STORAGE_KEY]: true }),
-      getStorage("local", { [BLOCKED_COUNT_KEY]: 0 }),
-    ]);
+    const syncState = await getStorage("sync", { [STORAGE_KEY]: true });
+    const summary = await getActivitySummary();
 
     setEnabledState(syncState[STORAGE_KEY] !== false);
-    ui.blockedCount.textContent = formatCount(localState[BLOCKED_COUNT_KEY]);
-
-    const pageStats = await getCurrentPageStats();
-    ui.pageBlockedCount.textContent = formatCount(pageStats.pageBlockedCount);
+    ui.activitySummary.textContent = `${formatCount(summary.blocks)} hidden · ${formatCount(summary.renames)} renamed in last 24 hours`;
   }
 
   async function saveState(): Promise<void> {
@@ -135,49 +128,46 @@ function bindPopup(ui: PopupUi): void {
     });
   }
 
-  function sendMessage(tabId: number, message: unknown): Promise<unknown> {
-    const result = api.tabs.sendMessage(tabId, message);
+  function createTab(
+    createProperties: chrome.tabs.CreateProperties
+  ): Promise<chrome.tabs.Tab> {
+    const result = api.tabs.create(createProperties);
 
     if (result && typeof result.then === "function") {
       return result;
     }
 
-    return new Promise((resolve, reject) => {
-      api.tabs.sendMessage(tabId, message, (response: unknown) => {
-        const error = api.runtime.lastError;
-        if (error) {
-          reject(new Error(error.message));
-          return;
-        }
-
-        resolve(response);
-      });
+    return new Promise((resolve) => {
+      api.tabs.create(createProperties, resolve);
     });
   }
 
-  async function getCurrentPageStats(): Promise<{ pageBlockedCount: number }> {
-    try {
-      const [activeTab] = await queryTabs({
-        active: true,
-        currentWindow: true,
-      });
-      if (!activeTab?.id) {
-        return { pageBlockedCount: 0 };
-      }
+  function updateTab(
+    tabId: number,
+    updateProperties: chrome.tabs.UpdateProperties
+  ): Promise<chrome.tabs.Tab | undefined> {
+    const result = api.tabs.update(tabId, updateProperties);
 
-      const raw = await sendMessage(activeTab.id, {
-        type: MESSAGE_GET_PAGE_STATS,
-      });
-      return normalizePageStatsResponse(raw);
-    } catch (error: unknown) {
-      const msg = error instanceof Error ? error.message : "";
-      if (!EXPECTED_MESSAGE_ERROR_PATTERN.test(msg)) {
-        ui.statusText.textContent =
-          "Page stats unavailable. Reload the page and try again.";
-      }
-
-      return { pageBlockedCount: 0 };
+    if (result && typeof result.then === "function") {
+      return result;
     }
+
+    return new Promise((resolve) => {
+      api.tabs.update(tabId, updateProperties, resolve);
+    });
+  }
+
+  async function openActivityTab(): Promise<void> {
+    const activityUrl = api.runtime.getURL(ACTIVITY_PAGE_PATH);
+    const tabs = await queryTabs({});
+    const existing = tabs.find((tab) => tab.url === activityUrl);
+
+    if (existing?.id !== undefined) {
+      await updateTab(existing.id, { active: true });
+      return;
+    }
+
+    await createTab({ url: activityUrl });
   }
 
   function formatCount(value: number | undefined): string {
@@ -253,9 +243,19 @@ function bindPopup(ui: PopupUi): void {
   ui.toggle.addEventListener("click", () => {
     void saveState();
   });
+  ui.viewActivityButton.addEventListener("click", () => {
+    void openActivityTab();
+  });
   ui.addCurrentSiteButton.addEventListener("click", () => {
     void addCurrentSite();
   });
+
+  api.storage.onChanged.addListener((changes, areaName) => {
+    if (areaName === "local" && ACTIVITY_KEY in changes) {
+      void loadState();
+    }
+  });
+
   void loadState();
   void updateCurrentSiteButton();
 }

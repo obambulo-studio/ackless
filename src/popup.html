@@ -30,17 +30,12 @@
         blocks.
       </p>
 
-      <section class="stats-grid" aria-live="polite">
-        <div class="stats">
-          <span class="stats__value" id="page-blocked-count">0</span>
-          <span class="stats__label">Hidden on this page</span>
-        </div>
-
-        <div class="stats">
-          <span class="stats__value" id="blocked-count">0</span>
-          <span class="stats__label">Hidden total</span>
-        </div>
-      </section>
+      <button class="activity-button" id="view-activity" type="button">
+        <span class="activity-button__label">View activity</span>
+        <span class="activity-button__summary" id="activity-summary"
+          >Last 24 hours across all sites</span
+        >
+      </button>
 
       <button class="host-button" id="add-current-site" type="button">
         Enable on this site

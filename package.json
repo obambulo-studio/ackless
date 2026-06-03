@@ -1,6 +1,6 @@
 {
   "name": "ackless",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Open-source browser extension that hides Australian Welcome to Country and Acknowledgement of Country blocks.",
   "type": "module",
